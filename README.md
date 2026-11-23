@@ -1,8 +1,8 @@
-# Lightroom Importer
+# LightCraft Cloud Importer
 
 Ein geplantes Open-Source-Werkzeug für den Umzug einer Adobe-Lightroom-Cloud-Bibliothek nach [LightCraft](https://github.com/storytold/lightcraft), mit möglichst allen Metadaten.
 
-**Stand: Mockup.** Das Projekt enthält noch keine funktionierende App. Das [klickbare Mockup](2026-11-23_Lightroom-Importer_App-Mockup.html) nutzt Beispieldaten, verbindet sich mit keinem Konto und verändert keine Dateien.
+**Stand: Mockup.** Das Projekt enthält noch keine funktionierende App. Das [klickbare Mockup](2026-11-23_LightCraft-Cloud-Importer_App-Mockup.html) nutzt Beispieldaten, verbindet sich mit keinem Konto und verändert keine Dateien.
 
 ## Geplanter Ablauf
 
@@ -47,4 +47,4 @@ Sofern du nichts anderes angibst, wird jeder Beitrag, den du zur Aufnahme in die
 
 ## Hinweis zu Marken
 
-Dieses Projekt ist unabhängig und steht in keiner Verbindung zu Adobe oder zum LightCraft-Projekt. Adobe und Lightroom sind Marken von Adobe Inc.
+Der LightCraft Cloud Importer ist ein unabhängiges Projekt und kein offizielles LightCraft-Produkt. Er steht in keiner Verbindung zu Adobe oder zum LightCraft-Projekt. Adobe und Lightroom sind Marken von Adobe Inc.

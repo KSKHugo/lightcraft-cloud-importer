@@ -7,6 +7,6 @@ root="$(git rev-parse --show-toplevel)"
 cd "$root"
 if [ -f Package.swift ]; then
     echo "== Tests (swift test)"
-    swift test --scratch-path "$HOME/Library/Caches/LightroomImporter-build" --quiet
+    swift test --scratch-path "$HOME/Library/Caches/LightCraftCloudImporter-build" --quiet
 fi
 exec "$root/Scripts/security_check.sh"
