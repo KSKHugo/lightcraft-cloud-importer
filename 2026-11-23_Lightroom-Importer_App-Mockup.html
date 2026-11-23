@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lightroom Importer Mockup</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #e9e6e0; --window: #f7f5f1; --side: #efece6; --panel: #ffffff; --raised: #f3f0ea;
+  --ink: #1f1d1a; --muted: #68645d; --line: #dcd8d0;
+  --accent: #b04e1c; --on-accent: #ffffff; --accent-soft: #f6e4d9;
+  --ok: #2b7549; --ok-soft: #dff0e5; --warn: #8a5a00; --warn-soft: #f8ecd0; --open: #5a5f6b; --open-soft: #e7e8ec;
+  --shadow: 0 24px 60px rgba(50, 40, 25, .22);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121110; --window: #1d1c1a; --side: #181715; --panel: #262421; --raised: #2e2b27;
+    --ink: #f3f0ea; --muted: #aaa59c; --line: #3a3732;
+    --accent: #ec9160; --on-accent: #231208; --accent-soft: #43291b;
+    --ok: #7ccf9b; --ok-soft: #1f3528; --warn: #e6bc62; --warn-soft: #3a2f17; --open: #b4b8c3; --open-soft: #30323a;
+    --shadow: 0 24px 60px rgba(0, 0, 0, .55);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121110; --window: #1d1c1a; --side: #181715; --panel: #262421; --raised: #2e2b27;
+  --ink: #f3f0ea; --muted: #aaa59c; --line: #3a3732;
+  --accent: #ec9160; --on-accent: #231208; --accent-soft: #43291b;
+  --ok: #7ccf9b; --ok-soft: #1f3528; --warn: #e6bc62; --warn-soft: #3a2f17; --open: #b4b8c3; --open-soft: #30323a;
+  --shadow: 0 24px 60px rgba(0, 0, 0, .55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  padding: 24px 16px; -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3, p { margin: 0; }
+.tag-line { max-width: 1240px; margin: 0 auto 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12.5px; }
+.theme { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--muted); }
+.window { max-width: 1240px; margin: 0 auto; height: min(820px, calc(100vh - 86px)); min-height: 620px; display: grid; grid-template-rows: 42px 1fr; background: var(--window); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+.titlebar { display: flex; align-items: center; gap: 14px; padding: 0 14px; background: var(--side); border-bottom: 1px solid var(--line); }
+.lights { display: flex; gap: 7px; } .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.lights i:nth-child(1) { background: #ec6a5e; } .lights i:nth-child(2) { background: #f4bf4f; } .lights i:nth-child(3) { background: #61c554; }
+.titlebar strong { font-size: 13px; font-weight: 600; }
+.titlebar span { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.body { display: grid; grid-template-columns: 224px minmax(0, 1fr); min-height: 0; }
+.side { background: var(--side); border-right: 1px solid var(--line); padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; }
+.step { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 9px; border-radius: 7px; color: var(--muted); }
+.step b { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-size: 11.5px; font-weight: 600; background: var(--window); }
+.step.done b { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.step[aria-current="step"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.step[aria-current="step"] b { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.step:disabled { cursor: default; opacity: .62; }
+.side-note { margin-top: auto; padding: 11px; font-size: 12px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+.side-note strong { display: block; color: var(--ink); margin-bottom: 2px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; }
+.content { overflow: auto; padding: 26px 30px; }
+.head { margin-bottom: 20px; max-width: 720px; }
+.head h1 { font-size: 22px; line-height: 1.2; letter-spacing: -.01em; margin-bottom: 5px; outline: none; }
+.head p { color: var(--muted); }
+.footer { display: flex; align-items: center; gap: 10px; padding: 11px 30px; border-top: 1px solid var(--line); background: var(--window); }
+.footer .sum { margin-right: auto; color: var(--muted); font-size: 13px; min-width: 0; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 6px 15px; font-weight: 500; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: var(--raised); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.07); }
+.btn:disabled { opacity: .45; cursor: default; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; margin-bottom: 11px; }
+.acct { display: flex; align-items: center; gap: 12px; }
+.acct .ic { width: 38px; height: 38px; flex: none; border-radius: 9px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.acct .tx { min-width: 0; flex: 1; } .acct .tx strong { display: block; } .acct .tx span { color: var(--muted); font-size: 12.5px; display: block; overflow-wrap: anywhere; }
+.section-label { font-size: 13px; font-weight: 600; margin: 22px 0 9px; }
+.route { display: flex; gap: 11px; width: 100%; text-align: left; padding: 13px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.route[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.radio { width: 16px; height: 16px; flex: none; margin-top: 2px; border-radius: 50%; border: 1.5px solid var(--muted); display: grid; place-items: center; }
+.route[aria-checked="true"] .radio { border-color: var(--accent); } .route[aria-checked="true"] .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.route strong { display: block; margin-bottom: 2px; } .route small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.notice { margin-top: 14px; display: flex; gap: 10px; padding: 11px 13px; border-radius: 8px; background: var(--warn-soft); color: var(--ink); font-size: 13px; }
+.notice svg { flex: none; color: var(--warn); margin-top: 1px; }
+.pick { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 14px; align-items: start; }
+.album { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px 7px; border: 0; background: none; border-radius: 6px; text-align: left; }
+.album:hover { background: var(--raised); }
+.album.sub { padding-left: 24px; }
+.check { width: 16px; height: 16px; flex: none; border-radius: 4px; border: 1.5px solid var(--muted); display: grid; place-items: center; }
+[aria-checked="true"] > .check { background: var(--accent); border-color: var(--accent); }
+[aria-checked="true"] > .check::after { content: ""; width: 8px; height: 4px; margin-top: -2px; border-left: 2px solid var(--on-accent); border-bottom: 2px solid var(--on-accent); transform: rotate(-45deg); }
+.album .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.album .ct { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.group-label { font-size: 12px; color: var(--muted); padding: 7px 7px 3px; }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.thumb { position: relative; aspect-ratio: 3 / 2; border-radius: 5px; overflow: hidden; background: var(--raised); }
+.thumb svg { width: 100%; height: 100%; display: block; }
+.thumb .meta { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding: 12px 6px 3px; font-size: 10.5px; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .62)); }
+.thumb .lbl { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .8); }
+.empty { color: var(--muted); padding: 34px 12px; text-align: center; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 3px 11px; font-size: 12.5px; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--window); border-color: var(--ink); }
+.table-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 640px; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-size: 11.5px; color: var(--muted); font-weight: 600; background: var(--raised); position: sticky; top: 0; }
+td code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+td.note { color: var(--muted); font-size: 12.5px; }
+tr.group td { background: var(--raised); font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 12px; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.badge.direct { background: var(--ok-soft); color: var(--ok); }
+.badge.approx { background: var(--warn-soft); color: var(--warn); }
+.badge.open { background: var(--open-soft); color: var(--open); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 15px; min-width: 0; }
+.stat span { color: var(--muted); font-size: 12.5px; display: block; }
+.stat strong { display: block; font-size: 23px; line-height: 1.25; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.bar { height: 8px; background: var(--raised); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 999px; }
+.prog-line { display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.stages li { display: flex; align-items: center; gap: 10px; padding: 6px 2px; color: var(--muted); }
+.stages li b { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1.5px solid var(--line); }
+.stages li.now { color: var(--ink); font-weight: 600; } .stages li.now b { border-color: var(--accent); border-right-color: transparent; animation: spin 1s linear infinite; }
+.paused .stages li.now b { animation: none; }
+.stages li.fin { color: var(--ink); } .stages li.fin b { background: var(--ok); border-color: var(--ok); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.log { font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); height: 214px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.issue { display: flex; gap: 11px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.issue:last-child { border-bottom: 0; }
+.issue strong { display: block; } .issue small { color: var(--muted); font-size: 12.5px; }
+.issue .n { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px); background: var(--ink); color: var(--window); padding: 8px 15px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; max-width: calc(100vw - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (max-width: 900px) {
+  body { padding: 12px 16px; }
+  .window { height: auto; min-height: 0; grid-template-rows: 42px auto; }
+  .body { grid-template-columns: minmax(0, 1fr); }
+  .side { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px; }
+  .step { width: auto; flex: none; padding: 6px 8px; }
+  .side-note { display: none; }
+  .content { padding: 20px 16px; overflow: visible; }
+  .footer { padding: 10px 16px; flex-wrap: wrap; }
+  .footer .sum { flex-basis: 100%; }
+  .grid2, .pick { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .titlebar span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stages li.now b { animation: none; } .toast { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="tag-line">
+  <span>Klickbares Mockup mit Beispieldaten. Es verbindet sich mit keinem Konto und verändert keine Dateien.</span>
+  <button class="theme" id="theme" type="button">Hell / Dunkel</button>
+</div>
+<div class="window">
+  <div class="titlebar">
+    <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <strong>Lightroom Importer</strong>
+    <span id="crumb"></span>
+  </div>
+  <div class="body">
+    <nav class="side" id="side" aria-label="Importschritte"></nav>
+    <div class="main">
+      <main class="content" id="content"></main>
+      <div class="footer" id="footer"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const STEPS = ['Verbinden', 'Fotos wählen', 'Metadaten', 'Import', 'Bericht'];
+const ALBUMS = [
+  { id: 'island', name: 'Island 2025', group: 'Reisen', count: 412, gb: 18.6 },
+  { id: 'lissabon', name: 'Lissabon', group: 'Reisen', count: 238, gb: 9.4 },
+  { id: 'familie', name: 'Familie', count: 1284, gb: 41.2 },
+  { id: 'portraits', name: 'Porträts', count: 356, gb: 22.7 },
+  { id: 'architektur', name: 'Architektur', count: 190, gb: 7.9 },
+  { id: 'ohne', name: 'Ohne Album', count: 2116, gb: 58.3 }
+];
+const SCENES = [
+  ['#27415f', '#e99a5b', '#3b4a55', '#1c262d', '#ffd9a0'], ['#8fc0d8', '#e8f0ea', '#6f8f7a', '#3e5a4b', '#fff7dd'],
+  ['#1b2238', '#7a4b78', '#34304f', '#17162a', '#f6c6b0'], ['#c9d8df', '#f2e6d4', '#a39a8c', '#6d675d', '#ffffff'],
+  ['#2e6a78', '#a9d6c8', '#2e5450', '#16322f', '#f4f7d6'], ['#d9825b', '#f5d08d', '#8b5240', '#4d2c2a', '#fff0c2']
+];
+const FILES = ['DSC_4182.NEF', 'IMG_2207.CR3', '_MG_0914.CR2', 'DSC08812.ARW', 'IMG_3345.DNG', 'DSC_4197.NEF', 'L1004412.DNG', 'IMG_2291.CR3', 'DSC08840.ARW', 'IMG_3361.HEIC', 'DSC_4210.NEF', 'IMG_2304.CR3'];
+const LABELS = [null, '#d8493b', null, '#e4b52f', null, '#4a9b5f', null, null, '#3f7fd0', null, '#d8493b', null];
+const RATINGS = [5, 3, 4, 0, 5, 2, 4, 3, 0, 5, 1, 4];
+
+const ROWS = [
+  ['Bewertung und Auswahl'],
+  ['Sternebewertung', 'xmp:Rating', 'Bewertung', 'direct', 'open', ''],
+  ['Farbmarkierung', 'xmp:Label', 'Farbmarkierung', 'direct', 'open', ''],
+  ['Markierung (Pick / Abgelehnt)', 'Lightroom-Flag', 'lc:flag', 'open', 'open', 'Quelle im Export noch zu testen'],
+  ['Beschreibung'],
+  ['Titel', 'dc:title', 'Titel', 'direct', 'open', ''],
+  ['Bildunterschrift', 'dc:description', 'Beschreibung', 'direct', 'open', ''],
+  ['Stichwörter', 'dc:subject', 'Stichwörter', 'direct', 'open', ''],
+  ['Stichwort-Hierarchie', 'lr:hierarchicalSubject', 'Stichwort-Baum', 'direct', 'open', ''],
+  ['Urheber', 'dc:creator', 'Urheber', 'direct', 'open', ''],
+  ['Copyright', 'dc:rights', 'Copyright', 'direct', 'open', ''],
+  ['Alt-Text', 'Iptc4xmpCore:AltTextAccessibility', 'Alt-Text', 'direct', 'open', ''],
+  ['Aufnahme und Ort'],
+  ['Aufnahmedatum', 'exif:DateTimeOriginal', 'Aufnahmezeit', 'direct', 'direct', ''],
+  ['GPS-Position', 'exif:GPSLatitude / Longitude', 'GPS', 'direct', 'open', ''],
+  ['Ort, Region, Land', 'photoshop:City / State / Country', 'Ort', 'direct', 'open', ''],
+  ['Kamera, Objektiv, Belichtung', 'EXIF im Original', 'Aufnahmedaten', 'direct', 'open', 'Bei JPEGs nicht gesichert'],
+  ['Organisation'],
+  ['Alben', 'Lightroom-API', 'LightCraft-Alben', 'open', 'open', 'Braucht Adobe-API-Zugang'],
+  ['Album-Ordner', 'Lightroom-API', 'Album-Gruppen', 'open', 'open', 'Braucht Adobe-API-Zugang'],
+  ['Personen / Gesichter', 'nicht dokumentiert', 'Gesichter', 'open', 'open', 'Quelle ungeklärt'],
+  ['Bearbeitung'],
+  ['Grundeinstellungen', 'crs:Exposure, crs:Vibrance …', 'Entwicklung', 'approx', 'open', 'Im JPEG fest eingerechnet'],
+  ['Zuschnitt und Ausrichtung', 'crs:Crop…, tiff:Orientation', 'Entwicklung', 'approx', 'open', ''],
+  ['Masken und KI-Effekte', 'crs:Mask…', 'Masken', 'approx', 'open', 'Sieht teils anders aus'],
+  ['Versionen und Verlauf', 'nicht dokumentiert', 'Versionen', 'open', 'open', 'Quelle ungeklärt']
+];
+const STATUS = { direct: 'Direkt', approx: 'Angenähert', open: 'Offen' };
+const STAGES = ['Originale und XMP einlesen', 'Prüfsummen und Duplikate prüfen', 'Metadaten in XMP zusammenführen', 'An LightCraft übergeben', 'Ergebnis gegenprüfen'];
+
+const state = { step: 0, connected: false, route: 'originals', selected: new Set(['island', 'lissabon', 'portraits']), filter: 'all', progress: 0, paused: false, done: false, log: [] };
+let timer = null;
+
+const $ = id => document.getElementById(id);
+const num = n => n.toLocaleString('de-DE');
+const gb = n => n.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' GB';
+const chosen = () => ALBUMS.filter(a => state.selected.has(a.id));
+const count = () => chosen().reduce((s, a) => s + a.count, 0);
+const size = () => chosen().reduce((s, a) => s + a.gb, 0);
+const statusOf = r => state.route === 'originals' ? r[3] : r[4];
+const report = () => { const total = count(), dup = Math.round(total * .012), approx = Math.round(total * .184), review = Math.round(total * .007); return { total, dup, imported: total - dup, approx, review }; };
+
+const ICON = {
+  cloud: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.7-8.95A6 6 0 0 1 18 10.5a3.8 3.8 0 0 1-.5 7.5Z"/></svg>',
+  lib: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4 3 2.5 3.5-3L20 16"/></svg>',
+  info: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+};
+
+function scene(i) {
+  const [a, b, c, d, sun] = SCENES[i % SCENES.length];
+  const x = 40 + (i * 37) % 110, y = 24 + (i * 13) % 26, h1 = 58 + (i * 7) % 16, h2 = 76 + (i * 5) % 12;
+  return `<svg viewBox="0 0 180 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="g${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="180" height="120" fill="url(#g${i})"/><circle cx="${x}" cy="${y}" r="10" fill="${sun}" opacity=".9"/><path d="M0 ${h1} C30 ${h1 - 22} 52 ${h1 + 8} 84 ${h1 - 12} S140 ${h1 - 18} 180 ${h1 + 2} V120 H0Z" fill="${c}"/><path d="M0 ${h2} C40 ${h2 - 12} 70 ${h2 + 12} 110 ${h2 - 2} S160 ${h2 - 8} 180 ${h2 + 4} V120 H0Z" fill="${d}"/></svg>`;
+}
+
+function viewConnect() {
+  return `<div class="head"><h1 tabindex="-1">Bibliotheken verbinden</h1><p>Lightroom bleibt unverändert. Der Importer liest nur und legt neue Einträge in LightCraft an.</p></div>
+  <div class="grid2">
+    <section class="card"><h2>Quelle</h2><div class="acct"><div class="ic">${ICON.cloud}</div><div class="tx"><strong>Adobe Lightroom Cloud</strong><span>${state.connected ? 'Beispielkonto verbunden · 4.596 Fotos · 158,1 GB' : 'Nicht verbunden'}</span></div><button class="btn${state.connected ? '' : ' primary'}" data-do="connect">${state.connected ? 'Trennen' : 'Anmelden'}</button></div></section>
+    <section class="card"><h2>Ziel</h2><div class="acct"><div class="ic">${ICON.lib}</div><div class="tx"><strong>LightCraft Library</strong><span>~/Pictures/LightCraft Library · LightCraft 0.21.1</span></div><button class="btn" data-do="mock">Ändern</button></div></section>
+  </div>
+  <div class="section-label" id="route-label">Wie sollen die Fotos übernommen werden?</div>
+  <div class="grid2" role="radiogroup" aria-labelledby="route-label">
+    <button class="route" role="radio" aria-checked="${state.route === 'originals'}" data-route="originals"><span class="radio"></span><span><strong>Originale mit Einstellungen (empfohlen)</strong><small>RAW-Dateien und Bearbeitungen bleiben erhalten. Du exportierst einmal aus Lightroom „Original + Einstellungen“, den Rest erledigt der Importer.</small></span></button>
+    <button class="route" role="radio" aria-checked="${state.route === 'jpeg'}" data-route="jpeg"><span class="radio"></span><span><strong>Vollautomatisch aus der Cloud</strong><small>Lädt JPEGs in voller Größe über die Adobe-API. Keine RAW-Daten, Bearbeitungen sind fest eingerechnet. Braucht eine Freigabe durch Adobe.</small></span></button>
+  </div>
+  <div class="notice">${ICON.info}<span>${state.route === 'originals' ? 'Adobe bietet derzeit keine dokumentierte Schnittstelle zum Herunterladen von Originalen. Deshalb ist hier ein manueller Export-Schritt nötig.' : 'Dieser Weg ersetzt deine Originale nicht. Er eignet sich nur als Sicherung oder für Fotos, deren RAW-Datei du nicht mehr brauchst.'}</span></div>`;
+}
+
+function viewPick() {
+  const row = a => `<button class="album${a.group ? ' sub' : ''}" role="checkbox" aria-checked="${state.selected.has(a.id)}" data-album="${a.id}"><span class="check"></span><span class="nm">${a.name}</span><span class="ct">${num(a.count)}</span></button>`;
+  const reisen = ALBUMS.filter(a => a.group), rest = ALBUMS.filter(a => !a.group);
+  const tiles = state.selected.size ? FILES.map((f, i) => `<div class="thumb">${scene(i + chosen().length)}${LABELS[i] ? `<span class="lbl" style="background:${LABELS[i]}"></span>` : ''}<div class="meta"><span>${f}</span><span aria-label="${RATINGS[i]} Sterne">${RATINGS[i] ? '★'.repeat(RATINGS[i]) : ''}</span></div></div>`).join('') : '';
+  return `<div class="head"><h1 tabindex="-1">Fotos wählen</h1><p>Wähle ganze Alben oder alles. Bereits importierte Fotos erkennt der Importer und überspringt sie.</p></div>
+  <div class="pick">
+    <section class="card" style="padding:9px"><div style="display:flex;justify-content:space-between;align-items:center;padding:4px 7px 7px"><strong>Alben</strong><button class="btn" style="padding:2px 9px;font-size:12px" data-do="all">${state.selected.size === ALBUMS.length ? 'Keine' : 'Alle'}</button></div><div class="group-label">Reisen</div>${reisen.map(row).join('')}<div class="group-label">Weitere</div>${rest.map(row).join('')}</section>
+    <section>${tiles ? `<div class="thumbs">${tiles}</div>` : '<div class="card empty">Wähle links mindestens ein Album.</div>'}</section>
+  </div>`;
+}
+
+function viewMeta() {
+  const rows = ROWS.filter(r => r.length === 1 || state.filter === 'all' || statusOf(r) === state.filter);
+  const visible = rows.filter((r, i) => r.length > 1 || (rows[i + 1] && rows[i + 1].length > 1));
+  const data = ROWS.filter(r => r.length > 1);
+  const n = s => data.filter(r => statusOf(r) === s).length;
+  const chips = [['all', `Alle ${data.length}`], ['direct', `Direkt ${n('direct')}`], ['approx', `Angenähert ${n('approx')}`], ['open', `Offen ${n('open')}`]];
+  return `<div class="head"><h1 tabindex="-1">Metadaten prüfen</h1><p>So wird jedes Feld übernommen. <strong>Direkt</strong> liest LightCraft unverändert, <strong>Angenähert</strong> kann anders aussehen, <strong>Offen</strong> muss im Prototyp noch belegt werden.</p></div>
+  <div class="filters">${chips.map(([k, l]) => `<button class="chip" aria-pressed="${state.filter === k}" data-filter="${k}">${l}</button>`).join('')}</div>
+  <div class="table-wrap"><table><thead><tr><th>Feld</th><th>Quelle</th><th>In LightCraft</th><th>Status</th><th>Hinweis</th></tr></thead><tbody>${visible.map(r => r.length === 1 ? `<tr class="group"><td colspan="5">${r[0]}</td></tr>` : `<tr><td>${r[0]}</td><td><code>${r[1]}</code></td><td>${r[2]}</td><td><span class="badge ${statusOf(r)}">${STATUS[statusOf(r)]}</span></td><td class="note">${r[5]}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function viewImport() {
+  const p = state.progress, total = count(), now = Math.min(total, Math.round(total * p / 100));
+  const stage = Math.min(STAGES.length - 1, Math.floor(p / 20));
+  return `<div class="head"><h1 tabindex="-1">${state.done ? 'Import abgeschlossen' : state.paused ? 'Import pausiert' : state.progress ? 'Import läuft' : 'Bereit zum Import'}</h1><p>Der Import lässt sich jederzeit anhalten und später an derselben Stelle fortsetzen.</p></div>
+  <div class="grid2${state.paused ? ' paused' : ''}">
+    <section class="card"><h2>Fortschritt</h2><div class="prog-line"><span id="p-count">${num(now)} von ${num(total)} Fotos</span><span id="p-pct">${Math.round(p)} %</span></div><div class="bar" role="progressbar" aria-label="Importfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p)}"><i id="p-bar" style="width:${p}%"></i></div><ul class="stages" id="p-stages" style="margin-top:12px">${stagesHtml(stage)}</ul></section>
+    <section class="card"><h2>Protokoll</h2><div class="log" id="p-log" tabindex="0" aria-label="Importprotokoll">${state.log.join('\n') || 'Noch keine Einträge.'}</div></section>
+  </div>`;
+}
+function stagesHtml(stage) {
+  return STAGES.map((s, i) => `<li class="${state.done || i < stage ? 'fin' : (state.progress > 0 && i === stage ? 'now' : '')}"><b></b>${s}</li>`).join('');
+}
+
+function viewReport() {
+  const r = report();
+  return `<div class="head"><h1 tabindex="-1">Bericht</h1><p>${num(r.imported)} Fotos liegen jetzt in deiner LightCraft-Bibliothek. Die Lightroom-Bibliothek wurde nicht verändert.</p></div>
+  <div class="stats">
+    <div class="stat"><span>Importiert</span><strong>${num(r.imported)}</strong></div>
+    <div class="stat"><span>Duplikate übersprungen</span><strong>${num(r.dup)}</strong></div>
+    <div class="stat"><span>Bearbeitung angenähert</span><strong>${num(r.approx)}</strong></div>
+    <div class="stat"><span>Bitte prüfen</span><strong>${num(r.review)}</strong></div>
+  </div>
+  <section class="card"><h2>Was du dir ansehen solltest</h2>
+    <div class="issue"><span class="badge approx">Angenähert</span><div><strong>Masken und KI-Effekte</strong><small>Diese Fotos können in LightCraft anders aussehen. Sie liegen im Album „Import prüfen“.</small></div><span class="n">${num(r.approx)}</span></div>
+    <div class="issue"><span class="badge open">Offen</span><div><strong>Kein passendes XMP gefunden</strong><small>Das Original wurde importiert, Bewertung und Stichwörter fehlen aber.</small></div><span class="n">${num(r.review)}</span></div>
+    <div class="issue"><span class="badge direct">Direkt</span><div><strong>Prüfsummen stimmen</strong><small>Jede importierte Datei ist identisch mit dem exportierten Original.</small></div><span class="n">${num(r.imported)}</span></div>
+  </section>`;
+}
+
+const VIEWS = [viewConnect, viewPick, viewMeta, viewImport, viewReport];
+
+function canOpen(i) {
+  if (i === 0) return true;
+  if (!state.connected) return false;
+  if (i >= 2 && !state.selected.size) return false;
+  if (i === 3) return true;
+  if (i === 4) return state.done;
+  return true;
+}
+
+function renderSide() {
+  $('side').innerHTML = STEPS.map((s, i) => `<button class="step${i < state.step || (i === 3 && state.done) ? ' done' : ''}" ${i === state.step ? 'aria-current="step"' : ''} ${canOpen(i) ? '' : 'disabled'} data-step="${i}"><b>${i < state.step || (i === 3 && state.done) ? '✓' : i + 1}</b>${s}</button>`).join('') +
+    `<div class="side-note"><strong>${num(count())} Fotos</strong>${gb(size())} ausgewählt</div>`;
+  $('crumb').textContent = `${state.route === 'originals' ? 'Originale mit Einstellungen' : 'Cloud-JPEGs'} → LightCraft Library`;
+  const side = $('side'), current = side.querySelector('[aria-current]');
+  if (current && side.scrollWidth > side.clientWidth) side.scrollLeft += current.getBoundingClientRect().left - side.getBoundingClientRect().left - 8;
+}
+
+function renderFooter() {
+  const s = state.step;
+  let left = '', right = '';
+  if (s === 0) { left = state.connected ? 'Verbunden. Weiter zur Auswahl.' : 'Melde dich an, um fortzufahren.'; right = `<button class="btn primary" data-do="next" ${state.connected ? '' : 'disabled'}>Weiter</button>`; }
+  if (s === 1) { left = `${num(count())} Fotos · ${gb(size())}`; right = `<button class="btn" data-do="back">Zurück</button><button class="btn primary" data-do="next" ${state.selected.size ? '' : 'disabled'}>Weiter</button>`; }
+  if (s === 2) { left = 'Nichts wird überschrieben. Vorhandene XMP-Daten bleiben erhalten.'; right = `<button class="btn" data-do="back">Zurück</button><button class="btn primary" data-do="next">Import vorbereiten</button>`; }
+  if (s === 3) {
+    left = `${num(count())} Fotos nach LightCraft`;
+    if (state.done) right = `<button class="btn primary" data-do="next">Bericht ansehen</button>`;
+    else if (!state.progress) right = `<button class="btn" data-do="back">Zurück</button><button class="btn primary" data-do="start">Import starten</button>`;
+    else right = `<button class="btn" data-do="cancel">Abbrechen</button><button class="btn primary" data-do="pause">${state.paused ? 'Fortsetzen' : 'Pausieren'}</button>`;
+  }
+  if (s === 4) { left = 'Bericht lokal gespeichert.'; right = `<button class="btn" data-do="restart">Neuer Import</button><button class="btn primary" data-do="mock">In LightCraft öffnen</button>`; }
+  $('footer').innerHTML = `<div class="sum">${left}</div>${right}`;
+}
+
+function render(focus) {
+  $('content').innerHTML = VIEWS[state.step]();
+  renderSide(); renderFooter();
+  if (focus) { $('content').scrollTop = 0; const h = $('content').querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
+}
+
+function go(step) { if (canOpen(step)) { state.step = step; render(true); } }
+function toast(t) { const e = $('toast'); e.textContent = t; e.classList.add('show'); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove('show'), 2200); }
+function resetRun() { clearInterval(timer); timer = null; state.progress = 0; state.paused = false; state.done = false; state.log = []; }
+
+function addLog(line) {
+  const t = new Date().toLocaleTimeString('de-DE');
+  state.log.push(`${t}  ${line}`);
+  const l = $('p-log'); if (l) { l.textContent = state.log.join('\n'); l.scrollTop = l.scrollHeight; }
+}
+
+const LOG_AT = [[1, 'Export-Ordner eingelesen'], [12, 'XMP-Dateien den Originalen zugeordnet'], [24, 'Prüfsummen berechnet'], [34, 'Duplikate erkannt und vorgemerkt'], [46, 'Stichwort-Hierarchie zusammengeführt'], [58, 'Sidecars neben den Kopien geschrieben'], [66, 'Übergabe an LightCraft gestartet'], [78, 'Alben angelegt'], [88, 'Stichproben gegen die Quelle geprüft'], [100, 'Import abgeschlossen']];
+
+function tick() {
+  if (state.paused || state.step !== 3) return;
+  const before = state.progress;
+  state.progress = Math.min(100, state.progress + .9);
+  LOG_AT.forEach(([at, text]) => { if (before < at && state.progress >= at) addLog(text); });
+  if (state.progress >= 100) { clearInterval(timer); timer = null; state.done = true; render(false); return; }
+  const total = count(), stage = Math.min(STAGES.length - 1, Math.floor(state.progress / 20));
+  $('p-count').textContent = `${num(Math.round(total * state.progress / 100))} von ${num(total)} Fotos`;
+  $('p-pct').textContent = `${Math.round(state.progress)} %`;
+  $('p-bar').style.width = state.progress + '%';
+  $('p-bar').parentElement.setAttribute('aria-valuenow', Math.round(state.progress));
+  $('p-stages').innerHTML = stagesHtml(stage);
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (b.id === 'theme') {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    return;
+  }
+  if (d.step) return go(+d.step);
+  if (d.route) { state.route = d.route; state.filter = 'all'; return render(false); }
+  if (d.album) { state.selected.has(d.album) ? state.selected.delete(d.album) : state.selected.add(d.album); resetRun(); render(false); const n = document.querySelector(`[data-album="${d.album}"]`); if (n) n.focus(); return; }
+  if (d.filter) { state.filter = d.filter; render(false); const n = document.querySelector(`[data-filter="${d.filter}"]`); if (n) n.focus(); return; }
+  switch (d.do) {
+    case 'connect': state.connected = !state.connected; if (!state.connected) resetRun(); render(false); break;
+    case 'next': go(state.step + 1); break;
+    case 'back': go(state.step - 1); break;
+    case 'all': if (state.selected.size === ALBUMS.length) state.selected.clear(); else ALBUMS.forEach(a => state.selected.add(a.id)); resetRun(); render(false); break;
+    case 'start': state.progress = .01; addLog('Import gestartet'); render(false); timer = setInterval(tick, 70); break;
+    case 'pause': state.paused = !state.paused; addLog(state.paused ? 'Pausiert' : 'Fortgesetzt'); render(false); break;
+    case 'cancel': resetRun(); render(false); toast('Import abgebrochen. Es wurde nichts übernommen.'); break;
+    case 'restart': resetRun(); state.step = 0; render(true); break;
+    case 'mock': toast('Im Mockup ohne Funktion'); break;
+  }
+});
+
+render(false);
+</script>
+</body>
+</html>

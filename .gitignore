@@ -1,0 +1,22 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+dist/
+__pycache__/
+.claude/settings.local.json
+
+# Secrets and personal data must never reach this public repository
+.env
+.env.*
+*.pem
+*.p8
+*.p12
+
+# Photo libraries and exports
+*.lrcat
+*.lrlibrary
+*.lrdata
+Export/
