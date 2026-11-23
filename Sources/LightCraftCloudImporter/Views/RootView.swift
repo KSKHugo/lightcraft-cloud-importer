@@ -24,7 +24,7 @@ struct RootView: View {
                     Text(step.title)
                 } icon: {
                     Image(systemName: isDone(step) ? "checkmark.circle.fill" : step.symbol)
-                        .foregroundStyle(isDone(step) ? Color.green : Color.accentColor)
+                        .foregroundStyle(isDone(step) ? Color.green : Color.importerAccent)
                 }
                 .foregroundStyle(model.canOpen(step) ? .primary : .tertiary)
                 .selectionDisabled(!model.canOpen(step))
@@ -52,9 +52,11 @@ struct RootView: View {
                     case .report: ReportView(model: model)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Minimum 0: a step must never push the footer out of the window.
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .top)
                 Divider()
                 FooterBar(model: model)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .navigationTitle("LightCraft Cloud Importer")

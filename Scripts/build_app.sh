@@ -1,6 +1,7 @@
 #!/bin/bash
 # Builds "LightCraft Cloud Importer.app" from the Swift package into dist/.
-# Signed ad hoc for use on this Mac: sandboxed, hardened runtime, no network entitlement.
+# Signed ad hoc for use on this Mac, with the hardened runtime. The app is not meant for
+# the Mac App Store and therefore runs without the App Sandbox.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -20,10 +21,7 @@ cp "$ROOT/AppPackaging/Info.plist" "$APP_DIR/Contents/Info.plist"
 printf 'APPL????' > "$APP_DIR/Contents/PkgInfo"
 
 echo "==> Code signing (ad hoc)"
-codesign --force --options runtime \
-    --entitlements "$ROOT/AppPackaging/LightCraftCloudImporter.entitlements" \
-    --sign - \
-    "$APP_DIR"
+codesign --force --options runtime --sign - "$APP_DIR"
 codesign --verify --strict "$APP_DIR"
 
 echo "Built: $APP_DIR"

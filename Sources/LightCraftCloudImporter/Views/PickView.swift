@@ -28,32 +28,49 @@ struct PickView: View {
             .padding([.horizontal, .top], 24)
 
             HStack(alignment: .top, spacing: 14) {
-                GroupBox {
-                    List {
-                        ForEach(albumGroups, id: \.title) { group in
-                            Section(group.title) {
-                                ForEach(group.albums) { album in
-                                    albumRow(album)
-                                }
-                            }
-                        }
-                    }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                } label: {
-                    HStack {
-                        Text("Alben")
-                        Spacer()
-                        Button(allSelected ? "Keine" : "Alle", action: model.toggleAllAlbums)
-                            .controlSize(.small)
-                    }
-                }
-                .frame(width: 280)
-
+                albumColumn
                 photoGrid
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .padding([.horizontal, .bottom], 24)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var albumColumn: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Alben")
+                    .font(.headline)
+                Spacer()
+                Button(allSelected ? "Keine" : "Alle", action: model.toggleAllAlbums)
+                    .controlSize(.small)
+            }
+            .padding(10)
+            Divider()
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    ForEach(albumGroups, id: \.title) { group in
+                        Text(group.title)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 8)
+                            .padding(.bottom, 2)
+                        ForEach(group.albums) { album in
+                            albumRow(album)
+                                .padding(.vertical, 3)
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 10)
+            }
+        }
+        .frame(width: 280)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.separator))
     }
 
     private func albumRow(_ album: ExportAlbum) -> some View {

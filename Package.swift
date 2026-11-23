@@ -11,7 +11,7 @@ let package = Package(
         // Exposed so the core can be built and tested on its own (`swift test`).
         .library(name: "ImporterCore", targets: ["ImporterCore"])
     ],
-    // No third-party dependencies and no network access: photos never leave the Mac.
+    // No third-party dependencies and no network code: photos never leave the Mac.
     targets: [
         // Everything without a UI: scanning an export, reading XMP, the safe copy.
         // Declarations use the `package` access level.

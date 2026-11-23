@@ -12,7 +12,7 @@ Eine native macOS-App für den Umzug einer Adobe-Lightroom-Cloud-Bibliothek nach
 4. Importieren, mit Pause, Abbruch, Fortsetzen und Duplikaterkennung.
 5. Den Bericht prüfen und den Zielordner in LightCraft importieren.
 
-Der Export wird nur gelesen. Im Zielordner wird nichts überschrieben, und jede Kopie wird per SHA-256 mit dem Original verglichen. Die App läuft in der macOS-Sandbox und hat keinen Netzwerkzugriff.
+Der Export wird nur gelesen. Im Zielordner wird nichts überschrieben, und jede Kopie wird per SHA-256 mit dem Original verglichen. Die App enthält keinen Netzwerkcode. Sie ist nicht für den Mac App Store gedacht und läuft deshalb ohne App-Sandbox.
 
 ## Bauen
 

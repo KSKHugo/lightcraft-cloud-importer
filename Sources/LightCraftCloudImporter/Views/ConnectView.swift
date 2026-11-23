@@ -85,9 +85,9 @@ private struct FolderCard: View {
                 HStack(spacing: 12) {
                     Image(systemName: symbol)
                         .font(.title3)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Color.importerAccent)
                         .frame(width: 38, height: 38)
-                        .background(Color.accentColor.opacity(0.14), in: RoundedRectangle(cornerRadius: 9))
+                        .background(Color.importerAccent.opacity(0.14), in: RoundedRectangle(cornerRadius: 9))
                     VStack(alignment: .leading, spacing: 1) {
                         Text(name)
                             .fontWeight(.semibold)
@@ -128,7 +128,7 @@ private struct RouteCard: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                .foregroundStyle(isSelected ? Color.importerAccent : .secondary)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .fontWeight(.semibold)
@@ -144,7 +144,7 @@ private struct RouteCard: View {
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isSelected ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.separator), lineWidth: isSelected ? 2 : 1)
+                .strokeBorder(isSelected ? AnyShapeStyle(Color.importerAccent) : AnyShapeStyle(.separator), lineWidth: isSelected ? 2 : 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
