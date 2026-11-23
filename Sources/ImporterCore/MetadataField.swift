@@ -135,7 +135,7 @@ package enum MetadataField: String, CaseIterable, Identifiable, Sendable {
                 .contains { xmp?.hasValue($0) ?? false }
         case .albums: return !photo.album.isEmpty
         case .albumGroups: return photo.album.contains("/")
-        case .people: return xmp?.contains("mwg-rs:Regions") ?? false
+        case .people: return (xmp?.faceRegionCount ?? 0) > 0
         case .basicEdits: return xmp?.hasBasicAdjustments ?? false
         case .crop: return xmp?.hasCrop ?? false
         case .masks: return xmp?.hasMasks ?? false

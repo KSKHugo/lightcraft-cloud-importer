@@ -79,6 +79,50 @@ final class ImporterCoreTests: XCTestCase {
         XCTAssertTrue(xmp.isRejected)
     }
 
+    private func regionsPacket(_ body: String, attribute: String = "") -> Data {
+        Data("""
+        <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+        <rdf:Description rdf:about="" xmlns:mwg-rs="http://www.metadataworkinggroup.com/schemas/regions/" \(attribute)>\(body)</rdf:Description>
+        </rdf:RDF></x:xmpmeta>
+        """.utf8)
+    }
+
+    func testEmptyRegionsFieldIsNoPerson() throws {
+        let asAttribute = try XMPDocument.parse(regionsPacket("", attribute: #"mwg-rs:Regions="""#))
+        XCTAssertTrue(asAttribute.contains("mwg-rs:Regions"))
+        XCTAssertEqual(asAttribute.faceRegionCount, 0)
+
+        let emptyList = try XMPDocument.parse(regionsPacket("""
+        <mwg-rs:Regions rdf:parseType="Resource"><mwg-rs:RegionList><rdf:Bag/></mwg-rs:RegionList></mwg-rs:Regions>
+        """))
+        XCTAssertEqual(emptyList.faceRegionCount, 0)
+    }
+
+    func testCountsOnlyFaceRegions() throws {
+        let xmp = try XMPDocument.parse(regionsPacket("""
+        <mwg-rs:Regions rdf:parseType="Resource"><mwg-rs:RegionList><rdf:Bag>
+        <rdf:li><rdf:Description mwg-rs:Name="Eins" mwg-rs:Type="Face"/></rdf:li>
+        <rdf:li rdf:parseType="Resource"><mwg-rs:Name>Zwei</mwg-rs:Name><mwg-rs:Type>Face</mwg-rs:Type></rdf:li>
+        <rdf:li><rdf:Description mwg-rs:Type="Focus"/></rdf:li>
+        <rdf:li rdf:parseType="Resource"><mwg-rs:Type>Pet</mwg-rs:Type></rdf:li>
+        </rdf:Bag></mwg-rs:RegionList></mwg-rs:Regions>
+        """))
+        XCTAssertEqual(xmp.faceRegionCount, 2)
+    }
+
+    func testPeopleFieldIgnoresEmptyRegions() throws {
+        try write("a", "a.jpg")
+        try Data(regionsPacket("", attribute: #"mwg-rs:Regions="""#)).write(to: source.appendingPathComponent("a.xmp"))
+        try write("b", "b.jpg")
+        try Data(regionsPacket("""
+        <mwg-rs:Regions rdf:parseType="Resource"><mwg-rs:RegionList><rdf:Bag>
+        <rdf:li><rdf:Description mwg-rs:Type="Face"/></rdf:li>
+        </rdf:Bag></mwg-rs:RegionList></mwg-rs:Regions>
+        """)).write(to: source.appendingPathComponent("b.xmp"))
+        let photos = try ExportScanner.scan(root: source).photos
+        XCTAssertEqual(MetadataField.coverage(of: photos)[.people], 1)
+    }
+
     func testRefusesEntities() {
         let hostile = #"<!DOCTYPE a [<!ENTITY b "c">]><a>&b;</a>"#
         XCTAssertThrowsError(try XMPDocument.parse(Data(hostile.utf8))) {

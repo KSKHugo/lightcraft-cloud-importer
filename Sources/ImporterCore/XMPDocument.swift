@@ -12,9 +12,12 @@ package struct XMPDocument: Sendable, Equatable {
     package static let maximumSize = 32 * 1024 * 1024
 
     package let properties: [String: [String]]
+    /// Regions of type `Face` in `mwg-rs:Regions`. An empty regions field counts as none.
+    package let faceRegionCount: Int
 
-    package init(properties: [String: [String]]) {
+    package init(properties: [String: [String]], faceRegionCount: Int = 0) {
         self.properties = properties
+        self.faceRegionCount = faceRegionCount
     }
 
     /// Files come from outside the app: DTDs and entities are refused before parsing, so a
@@ -30,7 +33,7 @@ package struct XMPDocument: Sendable, Equatable {
         let collector = Collector()
         parser.delegate = collector
         guard parser.parse() else { throw XMPError.malformed }
-        return XMPDocument(properties: collector.properties)
+        return XMPDocument(properties: collector.properties, faceRegionCount: collector.faceRegions)
     }
 
     package func contains(_ name: String) -> Bool {
@@ -106,12 +109,17 @@ private final class Collector: NSObject, XMLParserDelegate {
     ]
 
     private(set) var properties: [String: [String]] = [:]
+    private(set) var faceRegions = 0
     private var scopes: [[String: String]] = []
     private var path: [String] = []
     private var property: String?
     private var propertyDepth = 0
     private var text = ""
     private var sawItem = false
+    private var regionDepth = 0
+    private var regionIsFace = false
+    private var readingRegionType = false
+    private var regionType = ""
 
     private func canonical(_ qualifiedName: String) -> String {
         guard let colon = qualifiedName.firstIndex(of: ":") else { return qualifiedName }
@@ -141,6 +149,21 @@ private final class Collector: NSObject, XMLParserDelegate {
         let parent = path.last
         path.append(name)
 
+        if regionDepth == 0, name == "rdf:li", path.count >= 3,
+           path[path.count - 2] == "rdf:Bag", path[path.count - 3] == "mwg-rs:RegionList" {
+            regionDepth = path.count
+            regionIsFace = false
+        }
+        if regionDepth > 0 {
+            if attributeDict.contains(where: { canonical($0.key) == "mwg-rs:Type" && $0.value.trimmingCharacters(in: .whitespacesAndNewlines) == "Face" }) {
+                regionIsFace = true
+            }
+            if name == "mwg-rs:Type" {
+                regionType = ""
+                readingRegionType = true
+            }
+        }
+
         if property == nil {
             if name == "rdf:Description", parent == "rdf:RDF" {
                 for (key, value) in attributeDict where !key.hasPrefix("xmlns") {
@@ -161,11 +184,22 @@ private final class Collector: NSObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, foundCharacters string: String) {
         if property != nil { text += string }
+        if readingRegionType { regionType += string }
     }
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?,
                 qualifiedName qName: String?) {
         let name = path.last
+        if regionDepth > 0 {
+            if name == "mwg-rs:Type" {
+                readingRegionType = false
+                if regionType.trimmingCharacters(in: .whitespacesAndNewlines) == "Face" { regionIsFace = true }
+            }
+            if path.count == regionDepth {
+                if regionIsFace { faceRegions += 1 }
+                regionDepth = 0
+            }
+        }
         if let property {
             if name == "rdf:li" {
                 add(text, to: property)
