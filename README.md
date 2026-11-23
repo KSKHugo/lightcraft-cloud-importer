@@ -36,7 +36,14 @@ Scripts/install_hooks.sh
 
 ## Lizenz
 
-Die Lizenz ist noch nicht festgelegt. Bis eine `LICENSE`-Datei im Repository liegt, gelten die normalen Urheberrechte.
+Copyright (c) 2026 Pascal Hugo
+
+Dieses Projekt steht wahlweise unter einer der beiden folgenden Lizenzen (`MIT OR Apache-2.0`):
+
+- [MIT-Lizenz](LICENSE-MIT)
+- [Apache-Lizenz 2.0](LICENSE-APACHE)
+
+Sofern du nichts anderes angibst, wird jeder Beitrag, den du zur Aufnahme in dieses Projekt einreichst, ebenfalls unter diesen beiden Lizenzen veröffentlicht, ohne zusätzliche Bedingungen.
 
 ## Hinweis zu Marken
 
