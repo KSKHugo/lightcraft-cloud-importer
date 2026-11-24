@@ -2,7 +2,11 @@
 
 Eine native macOS-App für den Umzug einer Adobe-Lightroom-Cloud-Bibliothek nach [LightCraft](https://github.com/storytold/lightcraft), mit möglichst allen Metadaten.
 
-**Stand: früher Prototyp.** Die App arbeitet mit einem lokalen Lightroom-Export. Mit einem echten Export und dem anschließenden Import in LightCraft ist sie noch nicht getestet. Das [klickbare Mockup](2026-11-23_LightCraft-Cloud-Importer_App-Mockup.html) zeigt das ursprüngliche Konzept mit Beispieldaten.
+**Stand: Version 0.1, früher Stand.** Die App arbeitet mit einem lokalen Lightroom-Export. Ein erster echter Test mit 9 Fotos lief durch: Kopien prüfsummengleich, Metadaten, Album, Bewertungen und Regler-Werte kamen in LightCraft an. Farbmarkierungen, Ablehnungen, GPS, Masken und Personen sind mit echten Daten noch nicht geprüft. Das [klickbare Mockup](2026-11-23_LightCraft-Cloud-Importer_App-Mockup.html) zeigt das ursprüngliche Konzept mit Beispieldaten.
+
+## Download
+
+Fertige Versionen liegen unter [Releases](https://github.com/KSKHugo/lightcraft-cloud-importer/releases) als Disk-Image. Die App ist mit einer Developer ID signiert und von Apple notarisiert. Sie läuft ab macOS 14 auf Apple Silicon und Intel. Zum Installieren die App aus dem Image in den Ordner „Programme“ ziehen.
 
 ## Ablauf
 
@@ -26,7 +30,9 @@ swift test
 Scripts/build_app.sh
 ```
 
-Die fertige App liegt danach in `dist/`.
+Die fertige App liegt danach in `dist/`. Sie ist nur ad hoc signiert und für den eigenen Mac gedacht.
+
+Das Disk-Image zum Download baut `Scripts/build_release.sh`: Universal-App, Developer-ID-Signatur, Notarisierung und Stapling. Dafür braucht es ein „Developer ID Application“-Zertifikat und im Schlüsselbund hinterlegte Notarisierungs-Zugangsdaten (siehe Kopf des Skripts). Das Icon zeichnet `Scripts/make_icon.swift`.
 
 ## Technische Grenzen
 
